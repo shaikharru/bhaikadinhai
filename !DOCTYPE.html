@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Happy Birthday Zafar</title>
+
+<style>
+*{box-sizing:border-box}
+body{
+  margin:0;
+  min-height:100vh;
+  background:#000;
+  color:#00ff9c;
+  font-family:"Courier New",monospace;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  overflow:hidden;
+}
+canvas{position:fixed;top:0;left:0;z-index:0}
+.terminal{
+  position:relative;
+  z-index:1;
+  width:100%;
+  max-width:420px;
+  background:rgba(0,0,0,.9);
+  border-radius:16px;
+  box-shadow:0 0 40px rgba(0,255,156,.5);
+  padding:24px;
+  text-align:center;
+}
+.hidden{display:none}
+.title{font-size:1.2rem;margin-bottom:10px}
+.blink::after{content:"▮";animation:blink 1s infinite}
+@keyframes blink{50%{opacity:0}}
+.tap{margin-top:18px;font-size:1.4rem;cursor:pointer}
+.scan{
+  margin-top:14px;
+  min-height:150px;
+  white-space:pre-line;
+  text-align:left;
+}
+.cake{
+  font-size:3.8rem;
+  margin-top:18px;
+  cursor:pointer;
+  text-shadow:0 0 18px #00ff9c;
+}
+.big{font-size:1.4rem;margin-bottom:10px}
+.msg{line-height:1.6}
+.photo{
+  width:130px;
+  height:130px;
+  margin:12px auto;
+  border-radius:50%;
+  border:2px solid #00ff9c;
+  overflow:hidden;
+  box-shadow:0 0 20px rgba(0,255,156,.6);
+}
+.photo img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+}
+</style>
+</head>
+
+<body>
+
+<canvas id="matrix"></canvas>
+
+<!-- SCREEN 1 -->
+<div id="screen1" class="terminal">
+  <div class="title blink" id="intro"></div>
+  <div class="tap" onclick="openWish()">> TAP TO OPEN 🎁</div>
+</div>
+
+<!-- SCREEN 2 -->
+<div id="screen2" class="terminal hidden">
+  <div class="title">😈 ROAST MODE ON 😈</div>
+  <div class="scan" id="scan"></div>
+  <div class="cake" onclick="blast()">🎂</div>
+</div>
+
+<!-- SCREEN 3 -->
+<div id="screen3" class="terminal hidden">
+  <div class="big">🎉 HAPPY BIRTHDAY BHAI 🎉</div>
+
+  <!-- ✅ IMAGE FIXED -->
+  <div class="photo">
+    <img src="https://i.ibb.co/FLmtmDYH/IMG-20240608-WA0001.jpg" alt="Zafar">
+  </div>
+
+  <div class="msg">
+    Wo to mazaak tha yaar 😅<br>
+    Bura laga ho to <b>maaf kar dena</b> ❤️<br><br>
+    Lekin sach bolun to<br>
+    mujhe to <b>bahut maza aa gaya</b> 😂🔥<br><br>
+    <b>Happy Birthday bro 🎂🎉</b>
+  </div>
+</div>
+
+<script>
+/* ========= AUDIO SYSTEM ========= */
+let audioCtx;
+let melodyInterval;
+
+function startAudio(){
+  if(!audioCtx){
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+    // 🎶 Cherry-style soft melody (safe)
+    const notes = [262, 294, 330, 294];
+    let i = 0;
+
+    const gain = audioCtx.createGain();
+    gain.gain.value = 0.015;
+    gain.connect(audioCtx.destination);
+
+    melodyInterval = setInterval(()=>{
+      const osc = audioCtx.createOscillator();
+      osc.type = "triangle";
+      osc.frequency.value = notes[i];
+      i = (i + 1) % notes.length;
+      osc.connect(gain);
+      osc.start();
+      osc.stop(audioCtx.currentTime + 0.35);
+    }, 500);
+  }
+}
+
+function typingSound(){
+  if(!audioCtx) return;
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+  osc.type = "square";
+  osc.frequency.value = 750;
+  gain.gain.value = 0.025;
+  osc.connect(gain).connect(audioCtx.destination);
+  osc.start();
+  osc.stop(audioCtx.currentTime + 0.03);
+}
+
+/* ========= INTRO ========= */
+const introText="Initializing Birthday Roast Protocol";
+let idx=0;
+const intro=document.getElementById("intro");
+const introTimer=setInterval(()=>{
+  intro.textContent+=introText[idx++]||"";
+  if(idx>=introText.length)clearInterval(introTimer);
+},90);
+
+function openWish(){
+  startAudio();
+  screen1.classList.add("hidden");
+  screen2.classList.remove("hidden");
+}
+
+/* ========= SHAYARI ========= */
+const shayariLines=[
+  "Happy B’Day mere yaar Zafar 🎉",
+  "Sapne tera Netflix subscription jaise unlimited,",
+  "Effort tera free trial — 3 din me expired 😆",
+  "Tu kehta hai “aaj se pakka change”,",
+  "Par aadatein boli: “kal se dekh lenge” 🤡🔥"
+];
+
+function typeLineByLine(el, lines){
+  el.textContent="";
+  let lineIndex=0;
+
+  function nextLine(){
+    if(lineIndex>=lines.length){
+      setTimeout(()=>{
+        screen2.classList.add("hidden");
+        screen3.classList.remove("hidden");
+        confetti();
+      },1500);
+      return;
+    }
+
+    let charIndex=0;
+    el.textContent+="> ";
+    const line=lines[lineIndex];
+
+    const typer=setInterval(()=>{
+      el.textContent+=line.charAt(charIndex);
+      typingSound();
+      charIndex++;
+
+      if(charIndex>=line.length){
+        clearInterval(typer);
+        el.textContent+="\n";
+        lineIndex++;
+        setTimeout(nextLine,1200);
+      }
+    },90);
+  }
+  nextLine();
+}
+
+function blast(){
+  typeLineByLine(document.getElementById("scan"), shayariLines);
+}
+
+/* ========= CONFETTI ========= */
+function confetti(){
+  for(let i=0;i<120;i++){
+    const d=document.createElement("div");
+    d.style.position="fixed";
+    d.style.left=Math.random()*100+"%";
+    d.style.top="-10px";
+    d.style.width=d.style.height="6px";
+    d.style.background="#00ff9c";
+    d.style.opacity=.8;
+    d.style.animation=`fall ${2+Math.random()*2}s linear`;
+    document.body.appendChild(d);
+    setTimeout(()=>d.remove(),4000);
+  }
+}
+const st=document.createElement("style");
+st.innerHTML="@keyframes fall{to{transform:translateY(110vh) rotate(360deg)}}";
+document.head.appendChild(st);
+
+/* ========= MATRIX ========= */
+const c=document.getElementById("matrix"),ctx=c.getContext("2d");
+function resize(){c.width=innerWidth;c.height=innerHeight}
+resize();onresize=resize;
+const chars="01ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+const drops=Array(Math.floor(c.width/20)).fill(1);
+setInterval(()=>{
+  ctx.fillStyle="rgba(0,0,0,.05)";
+  ctx.fillRect(0,0,c.width,c.height);
+  ctx.fillStyle="#00ff9c";
+  ctx.font="16px monospace";
+  drops.forEach((y,i)=>{
+    const ch=chars[Math.floor(Math.random()*chars.length)];
+    ctx.fillText(ch,i*20,y*20);
+    if(y*20>c.height&&Math.random()>.975)drops[i]=0;
+    drops[i]++;
+  });
+},50);
+</script>
+
+</body>
+</html>
